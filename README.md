@@ -244,4 +244,3 @@ module.exports = Blockchain;
 </code></pre>
 
 # Week 2
-
