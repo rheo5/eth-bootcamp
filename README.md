@@ -563,7 +563,7 @@ module.exports = verifyProof;
 * merkle trees are used to store every transaction mined on the bitcoing network
  
 * architecture of bitcoin block:
-![bitcoin block](https://www.researchgate.net/publication/343236094/figure/fig1/AS:917904996462593@1595857013751/Bitcoin-block-structure.ppm)
+![bitcoin block](https://www.researchgate.net/profile/Suhyeon-Lee-3/publication/343236094/figure/fig1/AS:917904996462593@1595857013751/Bitcoin-block-structure.ppm)
 
 * all of the transactions per block are arranged into big merkle tree
 * merkle tree's root hash gets committed into the block
