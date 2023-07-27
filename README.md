@@ -14,10 +14,6 @@
   - [Patricia Merkle Tries](#patricia-merkle-tries)
 
 # Week 1
-
-https://github.com/ethereum/js-ethereum-cryptography
-https://github.com/paulmillr/noble-secp256k1
-
 ## cryptographic hash function
 * sha256
 * one way function
@@ -118,11 +114,13 @@ module.exports = getAddress;
 ## proof of work & mining
 
 * blockchain networks are distributed and decentralized databases consisting of nodes (computers?)
-*consensus mechanisms
+* consensus mechanisms
 * 51% nodes are in agreement over the current global state of the network 
-* consensus of proof of work : 
-1. you cannot double spend
-2. longest chain will be the one the rest of the nodes accept as the one "true" chain
+&nbsp;
+consensus of proof of work : 
+  1) you cannot double spend
+  2) longest chain will be the one the rest of the nodes accept as the one "true" chain
+&nbsp;
 * PoW consensus mechanism allows decentralized networks to agree on things like account balnaces, order of transactions, etc. 
 * resistant to attack
 * mining : process of creating a block of transactions to be added to a blockchain (work in PoW)
@@ -131,13 +129,14 @@ module.exports = getAddress;
 * PoW networks have target_difficulty 
 * for miner to add a new block, must find a PoW lower than the network target difficulty
 * "If you want to add a new block, you must provide a proof-of-work with 12 leading zeroes."
+&nbsp;
 * PoW mining algorithm :
-1. Take current block’s block header, add mempool transactions
-2. Append a nonce, starting at nonce = 0
-3. Hash data from #1 and #2
-4. Check hash versus target difficulty (provided by protocol)
-5. If hash < target, puzzle is solved! Get rewarded.
-6. Else, restart process from step #2, but increment nonce
+  1) Take current block’s block header, add mempool transactions
+  2) Append a nonce, starting at nonce = 0
+  3) Hash data from #1 and #2
+  4) Check hash versus target difficulty (provided by protocol)
+  5) If hash < target, puzzle is solved! Get rewarded.
+  6) Else, restart process from step #2, but increment nonce
 * as long as majority of nodes on the network follow the consensus rules -> blockchain remains secure and resistant to attacks, ensuring that only valid and verified transactions are added to the distributed ledger = maintaining integrity and trustworthiness
 * miners rewarded with currency
 * use PoW to prevent scamming since computationally expensive
@@ -197,7 +196,7 @@ module.exports = {
 
 ## blockchain structure
 * list of validated blocks
-* each block is tied to its predecessor ->chain
+* each block is tied to its predecessor --> chain
 * Each block stores the following information:
 Index
 Timestamp
@@ -206,7 +205,7 @@ Previous Hash
 Data
 Nonce
 * blockchain starts with single block -- genesis block (first block in blockchain w index 0)
-* nonce : number used to find a valid hash
+* **nonce** : number used to find a valid hash
 * hash change will cause a mutation in the previous hash of subsequent blocks. Since previous hash is used to calculate the hash, subsequent hashes will also change.
 * will lead to a cascading invalidation of blocks.
 * hacker would need to compute multiple blocks to actually affect the history of a blockchain
@@ -256,7 +255,7 @@ module.exports = Blockchain;
 * Bitcoin uses UTXO model to keep track of user balances
 * Transactions need : amount, payer, payee, payer authorization (usually digital signature)
 * Account based model : tracks the balances of users based on their overall account state, without any tracking on what constitutes the actual balance itself
-* UTXO (Unspent Transaction Outputs) : breaks down to its exact change? (change like cash) 
+* **UTXO (Unspent Transaction Outputs)** : breaks down to its exact change? (change like cash) 
 * Owning 3 bitcoins = Owning UTXOs that allows me to spend? is worth? 3 bitcoins
 * UTXOs are non fungible
 * To spend UTXO, must refer back to that specific UTXO (User's UTXO is scattered across many blocks)
@@ -321,18 +320,18 @@ module.exports = Transaction;
 
 * nodes! parent nodes! children nodes!
 * binary tree each parent has at most two children
-* leaves : last level nodes with no children
+* **leaves :** last level nodes with no children
 * linked list is also a tree -- one child per parent
 * leaf -> parent when they have children
-* key : data inside the node
-* root : parentest node? highest level node?
-* siblings : nodes in same parent same level
-* subtree : isolate from a broader tree
+* **key :** data inside the node
+* **root :** parentest node? highest level node?
+* **siblings :** nodes in same parent same level
+* **subtree :** isolate from a broader tree
 * file system could be a tree
 * tree usage 
-1) data can be stored hierarchically 
-2) good for searching and sorting 
-
+  1) data can be stored hierarchically 
+  2) good for searching and sorting 
+&nbsp;
 * binary search tree : binary; left subtree contains nodes with key lesser than node's key, vice versa for right subtree with greater than node's key
   
 <b> practice : binary search tree </b>
@@ -561,52 +560,52 @@ module.exports = verifyProof;
 ## Merkle trees in Bitcoin
 * design of merkle trees makes them extremely efficient for data verification
 * merkle trees are used to store every transaction mined on the bitcoing network
- 
-* architecture of bitcoin block:
+&nbsp;
+* **architecture of bitcoin block:**
 ![bitcoin block](https://www.researchgate.net/publication/343236094/figure/fig1/AS:917904996462593@1595857013751/Bitcoin-block-structure.ppm)
 
 * all of the transactions per block are arranged into big merkle tree
 * merkle tree's root hash gets committed into the block
-* transaction data can be stored off-chain
-why is this good?? ask in server
+* transaction data can be stored off-chain 
 * more efficient storage on blockchain -- only need to commit one piece of data than thousands of transactions
-* design purposed: keep size of blockchain small; must account for efficient data storage
-* benefit of merkle tree design : allows for efficient proof that some data exists / merkle proofs
+* design purposed: **keep size of blockchain small**; must account for efficient data storage
+* benefit of merkle tree design : **allows for efficient proof that some data exists / merkle proofs**
 * merkle proof confirms specific transactions represented by a leaf or branch hash within merkle hash root
-* merkle tree is:
-1. space and computationally efficient : reduce memory needed to verify that data has maintained its integrity
-2. good for scalability and decentralization : require less data to be broadcast across the blockchain network to verify data and transactions
-3. no need to pack a block full of transactions, just use merkle root hash : allow Simple Payment Verification (SPV) which helps verify a transaction without downloading entire block -- allows to send and receive transactions using a light client node (crypto wallet)
-
+&nbsp;
+merkle tree is:
+  1) space and computationally efficient : reduce memory needed to verify that data has maintained its integrity
+  2) good for scalability and decentralization : require less data to be broadcast across the blockchain network to verify data and transactions
+  3) no need to pack a block full of transactions, just use merkle root hash : allow Simple Payment Verification (SPV) which helps verify a transaction without downloading entire block -- allows to send and receive transactions using a light client node (crypto wallet)
+&nbsp;
 * for data verification with merkle tree, there is prover and verifier
-* prover: does calculation to create merkle root (just a hash)
-* verifier: does not need to know all the values to know for certain one value is in the tree
-* merkle tree : structure to validate data
-* merkle root : hash contained in block header -- derived from hashes of all other transactions
-* merkle path : path for merkle proof; the info the user needs to calculate expected value for the merkle root from their own transaction hash
-* merkle proof : proves existence of specific transaction
+* **prover:** does calculation to create merkle root (just a hash)
+* **verifier:** does not need to know all the values to know for certain one value is in the tree
+* **merkle tree :** structure to validate data
+* **merkle root :** hash contained in block header -- derived from hashes of all other transactions
+* **merkle path :** path for merkle proof; the info the user needs to calculate expected value for the merkle root from their own transaction hash
+* **merkle proof :** proves existence of specific transaction
 
 ## Patricia Merkle Tries
 
-* ethereum block architecutre:
+* **ethereum block architecutre:**
 ![ethereum block](https://i.stack.imgur.com/eOwjD.png)
 * ethereum keeps track of larger amount of state data
-* ethereum makes use of radix trie/tree aka Patricia trie and combines this data structure with merkle tree --> Patricia Merkle Trie
+* ethereum makes use of radix trie/tree aka Patricia trie and combines this data structure with merkle tree --> **Patricia Merkle Trie**
 * radix trie is tree-like data structure used to retrieve a string value by traversing down a branch of nodes that store associated references (keys) that together lead to the end value that can be returned
 * Merkle Patricia trie is data structure that stores key-value pairs like hash table + allows us to verify data integrity and inclusion of key-value pair
 * PMTs group similar-value nodes together; ex) searching for HELP leads you in same path as searching for HELLO
 * PATRICIA (practical algorithm to retrieve information coded in alphanumeric)
-* two different types of data:
-
-1. permanent : transaction occurs, record is sealed forever --> once you locate transaction in a block's transaction trie, can return to same path over and over to retrieve same result
-2. ephemeral : account states change all the time (receiving ether, interacting with contracts, etc) --> nonce, balance, storageRoot, codeHash
-
-* permanent and ephemeral data should be stored separately. Merkle tree is good for permanent, PMT is good for ephemeral data
+&nbsp;
+two different types of data:
+  1) **permanent :** transaction occurs, record is sealed forever --> once you locate transaction in a block's transaction trie, can return to same path over and over to retrieve same result
+  2) **ephemeral :** account states change all the time (receiving ether, interacting with contracts, etc) --> nonce, balance, storageRoot, codeHash
+&nbsp;
+* permanent and ephemeral data should be stored separately. **Merkle tree is good for permanent, PMT is good for ephemeral data**
 * ethereum account state needs to be frequently updated
-* block header : hash result of all data elements contained in a block
-* state root : root hash of state trie
-* transactions root : root has of block's transactions
-* receipts root : root hash of receipts trie  
+* **block header :** hash result of all data elements contained in a block
+* **state root :** root hash of state trie
+* **transactions root** : root has of block's transactions
+* **receipts root :** root hash of receipts trie  
 &nbsp;
 * **ethereum : state trie**
 ![state trie](https://res.cloudinary.com/divzjiip8/image/upload/v1669868801/guides/Screen_Shot_2022-11-30_at_8.26.05_PM.png)
