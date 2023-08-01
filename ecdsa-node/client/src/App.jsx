@@ -1,25 +1,17 @@
-import Wallet from "./Wallet";
-import Transfer from "./Transfer";
+import Home from "./Home";
+import Tools from "./Tools";
 import "./App.scss";
-import { useState } from "react";
+
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 function App() {
-  const [balance, setBalance] = useState(0);
-  const [address, setAddress] = useState("");
-  const [signature, setSignature] = useState("");
-
   return (
-    <div className="app">
-      {/* LHS */}
-      <Wallet 
-        balance={balance}
-        setBalance={setBalance}
-        address={address}
-        setAddress={setAddress}
-      />
-      {/* RHS */}
-      <Transfer setBalance={setBalance} address={address} />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/tools" element={<Tools />} />
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,35 +1,37 @@
-import { useState } from "react";
 import server from "./server";
 
-function Transfer({ address, setBalance }) {
+import React, { useState } from "react";
+
+function Tools() {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
-  const [signature, setSignature] = useState("");
+  const [privateKey, setPrivateKey] = useState("");
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
-  async function transfer(evt) {
+  async function tools(evt) {
     evt.preventDefault();
 
     try {
-      const {
-        data: { balance },
-      } = await server.post(`send`, {
-        sender: address,
+      const signature = await server.post(`send-tools`, {
         amount: parseInt(sendAmount),
         recipient,
-        signature,
+        privateKey,
       });
-      setBalance(balance);
+      console.log(signature);
+      alert(
+        "r : " + signature.data.r +
+        "s : " + signature.data.s +
+        "recovery    : " + signature.data.recovery
+        );
     } catch (ex) {
       alert(ex.response.data.message);
     }
   }
 
   return (
-    <form className="container transfer" onSubmit={transfer}>
+    <form className="container tools" onSubmit={tools}>
       <h1>Send Transaction</h1>
-
       <label>
         Send Amount
         <input
@@ -38,7 +40,6 @@ function Transfer({ address, setBalance }) {
           onChange={setValue(setSendAmount)}
         ></input>
       </label>
-
       <label>
         Recipient
         <input
@@ -47,19 +48,17 @@ function Transfer({ address, setBalance }) {
           onChange={setValue(setRecipient)}
         ></input>
       </label>
-
       <label>
-        Signature
+        Private Key
         <input
-          placeholder="Signature with hashed message : recipient + amount in string"
-          value={signature}
-          onChange={setValue(setSignature)}
+          placeholder="Private Key"
+          value={privateKey}
+          onChange={setValue(setPrivateKey)}
         ></input>
       </label>
-
-      <input type="submit" className="button" value="Transfer" />
+      <input type="submit" className="button" value="Tools" />
     </form>
   );
 }
 
-export default Transfer;
+export default Tools;
