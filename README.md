@@ -116,11 +116,11 @@ module.exports = getAddress;
 * blockchain networks are distributed and decentralized databases consisting of nodes (computers?)
 * consensus mechanisms
 * 51% nodes are in agreement over the current global state of the network 
-&nbsp;
+<br>
 consensus of proof of work : 
   1) you cannot double spend
   2) longest chain will be the one the rest of the nodes accept as the one "true" chain
-&nbsp;
+<br>
 * PoW consensus mechanism allows decentralized networks to agree on things like account balnaces, order of transactions, etc. 
 * resistant to attack
 * mining : process of creating a block of transactions to be added to a blockchain (work in PoW)
@@ -129,7 +129,7 @@ consensus of proof of work :
 * PoW networks have target_difficulty 
 * for miner to add a new block, must find a PoW lower than the network target difficulty
 * "If you want to add a new block, you must provide a proof-of-work with 12 leading zeroes."
-&nbsp;
+<br>
 * PoW mining algorithm :
   1) Take current block’s block header, add mempool transactions
   2) Append a nonce, starting at nonce = 0
@@ -331,7 +331,7 @@ module.exports = Transaction;
 * tree usage 
   1) data can be stored hierarchically 
   2) good for searching and sorting 
-&nbsp;
+<br>
 * binary search tree : binary; left subtree contains nodes with key lesser than node's key, vice versa for right subtree with greater than node's key
   
 <b> practice : binary search tree </b>
@@ -560,7 +560,7 @@ module.exports = verifyProof;
 ## Merkle trees in Bitcoin
 * design of merkle trees makes them extremely efficient for data verification
 * merkle trees are used to store every transaction mined on the bitcoing network
-&nbsp;
+<br>
 * **architecture of bitcoin block:**
 ![bitcoin block](https://www.researchgate.net/publication/343236094/figure/fig1/AS:917904996462593@1595857013751/Bitcoin-block-structure.ppm)
 
@@ -571,12 +571,12 @@ module.exports = verifyProof;
 * design purposed: **keep size of blockchain small**; must account for efficient data storage
 * benefit of merkle tree design : **allows for efficient proof that some data exists / merkle proofs**
 * merkle proof confirms specific transactions represented by a leaf or branch hash within merkle hash root
-&nbsp;
+<br>
 merkle tree is:
   1) space and computationally efficient : reduce memory needed to verify that data has maintained its integrity
   2) good for scalability and decentralization : require less data to be broadcast across the blockchain network to verify data and transactions
   3) no need to pack a block full of transactions, just use merkle root hash : allow Simple Payment Verification (SPV) which helps verify a transaction without downloading entire block -- allows to send and receive transactions using a light client node (crypto wallet)
-&nbsp;
+<br>
 * for data verification with merkle tree, there is prover and verifier
 * **prover:** does calculation to create merkle root (just a hash)
 * **verifier:** does not need to know all the values to know for certain one value is in the tree
@@ -595,32 +595,32 @@ merkle tree is:
 * Merkle Patricia trie is data structure that stores key-value pairs like hash table + allows us to verify data integrity and inclusion of key-value pair
 * PMTs group similar-value nodes together; ex) searching for HELP leads you in same path as searching for HELLO
 * PATRICIA (practical algorithm to retrieve information coded in alphanumeric)
-&nbsp;
+<br>
 two different types of data:
   1) **permanent :** transaction occurs, record is sealed forever --> once you locate transaction in a block's transaction trie, can return to same path over and over to retrieve same result
   2) **ephemeral :** account states change all the time (receiving ether, interacting with contracts, etc) --> nonce, balance, storageRoot, codeHash
-&nbsp;
+<br>
 * permanent and ephemeral data should be stored separately. **Merkle tree is good for permanent, PMT is good for ephemeral data**
 * ethereum account state needs to be frequently updated
 * **block header :** hash result of all data elements contained in a block
 * **state root :** root hash of state trie
 * **transactions root** : root has of block's transactions
 * **receipts root :** root hash of receipts trie  
-&nbsp;
+<br>
 * **ethereum : state trie**
 ![state trie](https://res.cloudinary.com/divzjiip8/image/upload/v1669868801/guides/Screen_Shot_2022-11-30_at_8.26.05_PM.png)
 
 * state trie acts as mapping between addresses and account states
 * can be seen as a global state that is constantly updated by transaction executions. all the information about accounts are stored in the world state trie and you can retrieve information by querying it
 * from javascript request to ethereum world date, you will get object containing some data: ex) balance = , nonce = , root = , codeHash =
-&nbsp;
+<br>
 * **ethereum : transaction trie**
 * ![transaction trie](https://res.cloudinary.com/divzjiip8/image/upload/v1669869222/guides/Screen_Shot_2022-11-30_at_8.33.27_PM.png)
 
 * transaction trie records transactions in ethereum; once block is mined, transaction trie is never updated
 * each transaction in ethereum records multiple pieces specific to each transaction such as gasPrice, value, from, etc
 * Etherscan - query the Ethereum blockchain for transaction data then index into organized transaction viewer
-&nbsp;
+<br>
 * **ethereum: transaction receipt trie**
 * transaction receipt trie records receipts (outcomes) of transactions; ex( gasUsed, logs, etc
 * once block is mined, transaction receipt trie is never updated
