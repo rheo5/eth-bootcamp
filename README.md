@@ -2,10 +2,10 @@
 
 - [Ethereum Bootcamp notes](#ethereum-bootcamp-notes)
 - [Week 1](#week-1)
-  - [cryptographic hash function](#cryptographic-hash-function)
-  - [public key cryptography](#public-key-cryptography)
-  - [proof of work \& mining](#proof-of-work--mining)
-  - [blockchain structure](#blockchain-structure)
+  - [Cryptographic hash function](#cryptographic-hash-function)
+  - [Public key cryptography](#public-key-cryptography)
+  - [Proof of work \& mining](#proof-of-work--mining)
+  - [Blockchain structure](#blockchain-structure)
 - [Week 2](#week-2)
   - [UTXO \& Account Models](#utxo--account-models)
   - [Tree data structures](#tree-data-structures)
@@ -15,7 +15,7 @@
 
 # Week 1
 
-## cryptographic hash function
+## Cryptographic hash function
 
 - sha256
 - one way function
@@ -23,7 +23,7 @@
 - hard to find input with output
 - can either brute force guess or rainbow table (precomputated table)
 
-## public key cryptography
+## Public key cryptography
 
 - if two parties meet before, can agree upon key + function
 - symmetric key cryptography - when keys on both sides
@@ -32,7 +32,7 @@
 - public and private key
 - anyone can encrypt w public key and only holder of? private key can decrypt; vice versa w private to public
 
-## proof of work & mining
+## Proof of work & mining
 
 - blockchain networks are distributed and decentralized databases consisting of nodes (computers?)
 - consensus mechanisms
@@ -64,7 +64,7 @@
 - to overpower this network and force your own version of truth, need to come up with more computing power than all the noes in the system
 - 51% attack : need 51% of total hashing power in network
 
-## blockchain structure
+## Blockchain structure
 
 - list of validated blocks
 - each block is tied to its predecessor --> chain
