@@ -1389,6 +1389,7 @@ contract Library {
 ## Smart Contract Inheritance
 
 - inheritance allows programmers to create classes that are built upon existing classes
+
 ![inheritance](https://res.cloudinary.com/divzjiip8/image/upload/v1672806772/alchemyu/Untitled_7.png)
 
 - parent class (base classes) : animal is parent of dog
