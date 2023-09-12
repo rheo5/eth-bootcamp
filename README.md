@@ -21,6 +21,33 @@
   - [Reading data from Ethereum](#reading-data-from-ethereum)
   - [Ethereum nodes](#ethereum-nodes)
   - [Ethereum transactions](#ethereum-transactions)
+- [Week 4](#week-4)
+  - [Solidity basic syntax](#solidity-basic-syntax)
+  - [Solidity Bytecode](#solidity-bytecode)
+  - [Glance at Solidity](#glance-at-solidity)
+  - [Solidity Functions](#solidity-functions)
+  - [Smart Contract Compilation](#smart-contract-compilation)
+  - [Hardhat](#hardhat)
+  - [Calling EOAs](#calling-eoas)
+  - [Reverting Transactions](#reverting-transactions)
+  - [Calling Contract Addresses](#calling-contract-addresses)
+- [Week 5](#week-5) 
+  - [Mappings](#mappings) 
+  - [Events](#events)
+  - [Escorw](#escrow)
+  - [Array & Structs](#array--structs) 
+- [Week 6](#week-6)
+  - [Multi-signature Contracts](#multi-signature-contracts)
+  - [Smart Contract Inheritance](#smart-contract-inheritance) 
+  - [ERC-20 Tokens](#erc-20-tokens) 
+  - [Send ERC20s to Contracts](#send-erc20s-to-contracts)
+  - [NFTs](#nfts)
+- [Week 7](#week-7)
+  - [Storage Slots](#storage-slots)
+  - [Delgatecall](#delegatecall)
+  - [Libraries](#libraries)
+  - [Upgradeable Smart Contracts](#upgradeable-smart-contracts)
+  - [The state of Governance](#the-state-of-governance)
 
 # Week 1
 
@@ -1117,4 +1144,491 @@ contract A {
 ```
 - only need to give solidity enough information to figure out how to encode calldata
 - contract A's perspective, do not need full method deinition of storeValue
+
+# Week 5
+
+## Mappings
+
+- hash table : data structure that implements associative array (dictionary)
+- key value pairs
+![hash diagram](https://static.javatpoint.com/ds/images/hash-table.png)
+- hashtable searching O(1)
+- in solidity hashtables are called mapping
+- mapping act as hash tables, consisting of key types and corresponding value type pairs
+``` 
+mapping(_KeyType => _ValueType) public mappingName;
+```
+- **useful for address association**
+- can associate ethereum addres to specific value
+
+example: keep track of how many sodas a user has purchased
+```
+mapping(address => uint) public sodasPurchased;
+```
+
+### Accessing value types form a mapping
+```
+function numSodasPerUser(address _userAddress) public returns (uint) {
+    return sodasPurchased[_userAddress];
+}
+```
+```
+function purchaseSoda() public {
+    // we can't dispense a soda if there are none left!
+    require(numSodas > 1, "Sodas must be in stock!");
+    // update the mapping to reflect this msg.sender has purchased another soda
+    sodasPurchased[msg.sender] += 1;
+    // update the numSodas state variable to reflect there is one less soda in the vending machine smart contract
+    numSodas--;
+}
+```
+
+**use cases**
+- ERC-20 tokens use balanceOf mapping to keep track of user balances in ERC-20 smart contract
+```
+mapping(address => uint) public balanceOf; // ERC-20s
+mapping(address => bool) public hasVoted; // DAOs
+mapping(uint => bool) public isMember; // DAOs
+mapping(string => uint) public userZipCode; // general info tracking
+```
+
+### Nested mappings
+ex : maps an address (the DAO voter) type to a mapping that itself maps a uint (the proposal id #) to a bool (whether the DAO voter supports that specific proposal).
+```
+mapping(address => mapping(uint => bool)) public votesPerProposal;
+```
+
+## Events
+- events : way solidity and evm provide developers with logging functionality used to write information to data structure on blockchain that lives outside of smart contracts' storage variables
+- abstraction on top of evm's low level logging functionality 
+- specific opcode will depend on number of topics of event declares using indexed keyword
+- low-level logs are stored in transaction receipt of transation under transaction receipts trie
+- logs are written by the smart contract when the contract emits events, but these logs cannot be ready by the smart contract
+- inaccessability of logs allows developers to store data on chain
+
+### defining events
+- event keyword
+```
+interface IERC20 {
+    event Transfer(address indexed from, address indexed to, uint256 value);
+}
+```
+- event's name : Transfer
+- event's topics : from, to, value
+- if variable in event is not marked as indexed it will be included when the event is emitted
+  - code listening on the event will not be able to filter on non indexed variables
+- whenever transfer event is emitted the from, to, and value data will be contained in the event
+
+### emiting events
+- once event has been defined, can emit event from smart contract
+
+```
+function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {
+    // perform various checks, such as the `from` address has `amount` of tokens
+    
+    // do the transfer of tokens
+    unchecked {
+        _balances[from] = fromBalance - amount;
+        _balances[to] += amount;
+    }
+
+    // the Transfer event is emitted here
+    emit Transfer(from, to, amount);
+
+    // perform various cleanup
+}
+```
+
+### Listening to events
+- use ethers provider to connect to a contract and listen to transfer events and do something with event data
+```
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const contract = new Contract(erc20TokenAddress, ERC20_ABI, provider);
+
+  contract.on('Transfer', async (from, to, amount, data) => {
+    console.log('Transfer event emitted. {from, to, amount, data}');
+  });
+```
+
+## Escrow
+
+- Escrow : contractual arrangement in which third party receives and disburses money or property for the primary transacting parties, with disbursement dependent on conditions agreed to by the transacting parties
+- buyer seller relationship
+- insert escrow agent between buyer and seller
+- escrow agent is like trusted third party between buyer and seller
+1) buyer sends funds to escrow agent, 
+2) seller gives purchase, 
+
+after verification: 
+
+3) releases fund to seller if verified, and if not releases back to buyer
+
+## Array & Structs
+
+### Solidity Reference Types
+- primitive data types / value types : stores its data directly in the variable (uint, boolean, address, etc)
+- reference based data types : arrays, strings, structs, mappings
+- reference type : does not store values directly in a variable; instead holds a pointer to the address of the data's location
+
+### Arrays
+- array is data structure consisting of collection of elements (values or variables) each identified by at least one array index or key
+- can be both fixed or dynamic size
+  - dynamic arrays : size is not predefined when they are declared; as elements are systematically added, size of array changes and during runtime, actual size of array will be determined
+  - fixed arrays : have predefined size; quanitity of elements present in array should not exceed size
+
+**Storage Arrays** - declared as state variables and can be either fixed or dynamic in size
+```
+contract MyContract {
+    // Several ways to initialize an array
+
+    // Dynamic sized array
+    uint[] public arr;
+
+    // Fixed sized arrays
+    uint[] public arr2 = [1, 2, 3]; 
+    // all elements initialize to 0
+    uint[10] public myFixedSizeArr;
+}
+```
+- .length : returns how many values an array holds per index
+
+dynamic storage array have access to 
+- .push() : used to add element to last position
+- .pop() : used to remove element at last position
+
+*iterating arrays is costly
+
+### Structs
+
+- struct types are used to represent a record, or grouping of common data
+
+```
+struct structName {
+   type1 typeName1;
+   type2 typeName2;
+   type3 typeName3;
+}
+```
+
+- can make array of structs
+
+ex:
+```
+contract Library {
+
+    struct Book {
+        string title;
+        string author;
+        uint bookId;
+        address registrant;
+    }
+
+    Book[] public books;
+
+    function addBook(string memory _title, string memory _author) public {
+        // whoever adds a book, that is the registrant on this book
+        books.push(Book(_title, _author, books.length, msg.sender));
+    }
+    
+    function get(uint _bookId) public view returns (string memory _title, string memory _author) {
+        return(books[_bookId].title, books[_bookId].author);
+    }
+    
+    function update(uint _bookId, string memory _newTitle, string memory _newAuthor) public {
+        // protect our book record by only making
+        // this function available to the original registrant
+        require(msg.sender == books[_bookId].registrant, 'You must have been the one to add the book to change the record!');
+        
+        books[_bookId].title = _newTitle;
+        books[_bookId].author = _newAuthor;
+    }
+}
+```
+
+- string parameters use memory; requirement of solidity when you use reference types as parameter, must precede the parameter with either memory of calldata
+  - tells solidity compiler where the data being passed in lives
+- calldata : read-only reference to the argument data
+- memory : temporary data location to keep local variables in; only exist in memory for length of transaction
+  - can read/write to this data location relatively cheaply when compared to storage
+- storage : data taht gets stored on the blockchain; where state variables are stored
+
+# Week 6
+
+## Multi-signature Contracts
+
+- **multi-signature contract** : smart contract designed so that multiple signatures from different addresses are needed for transaction to be executed
+- used as wallets
+
+### multi-sig utility
+- acts as wallet as it can hold and transfer funds
+- needs greater than one signatures to approve wallet activity such as transferring funds out 
+- since multi-sigs are powered by multiple keys, they avoid a single point of failure, which makes it significantly harder for funds to be compromised
+  - higher degree of security against lost or compromised keys
+
+### no single point of failure
+- EOA directly controls an address and any funds associated to it because external actor has direct ownership over private key needed to sign and authorize transactions
+  - called single point of failure
+    - if private key is compromised or lost, the direct control over address's balance no longer exists
+
+![multi-sig-wallet](https://res.cloudinary.com/divzjiip8/image/upload/v1672906425/alchemyu/Untitled_17.png)
+
+- multiple keys are required to approve in multi-sig wallet setup
+- doesn't matter whether one individual loses their key as there will be other individuals that can approve 
+- kick out the compromised key and re-add the compromised user under a new address
+- splitting responsibility of ownership is secure even if there is malicious party in multi sig contract since they would need to corrupt a majority of the holders to compromise wallet entirely
+
+### multi-sig contract wallet use cases
+1. families : inheritance, wills, approved expenditures of house expenses,
+2. businesses/startups : business expenses, trasury management, embezzlement protection
+3. teams/organization : team jerseys, travel expenses
+
+## Smart Contract Inheritance
+
+- inheritance allows programmers to create classes that are built upon existing classes
+![inheritance](https://res.cloudinary.com/divzjiip8/image/upload/v1672806772/alchemyu/Untitled_7.png)
+
+- parent class (base classes) : animal is parent of dog
+- overriden method : move is a method that Dog inherits but overwrites
+- inherited method: eat
+- child class (subclass)
+
+### inheritance in solidity
+
+- contracts can inherit other contracts by using is keyword
+
+```
+contract A {
+    
+}
+
+contract B is A {
+    
+}
+```
+- contract A is base contract (parent), contract B is derived contract (child)
+- single inheritance
+
+### multi level inheritance
+
+- instead of single parent-child there are multiple levels of parent child relationships
+- aka smart contract inheritance chain
+
+### Hierarchical inheritance
+
+- single contract acts as a base contract for multiple derived contracts
+
+### solidity inheritance - function syntax
+
+- virtual : function that is going to be overriden by a child contract
+- override : function that is going to override a parent function 
+
+## ERC-20 Tokens
+
+- ERC-20 Token is representation of some sort of asset on ethereum network
+  - shares in company
+  - reward system points
+  - voting rights
+  - cryptocurrency
+  - lottery tickets
+  - etc
+- is technical standard
+- at base level ERC-20 token smart contract uses mapping to keep track of fungible tokens : any one token is exactly equal to any other token
+- ERC-20 defines common interface so that any application can use them in a standard way
+- An ERC-20-compliant token contract must provide at least the following:
+  - name, symbol, and decimals are all optional fields
+  - totalSupply defines the current circulating supply of the tokens
+  - balanceOf will return the balance for a particular user
+  - transfer which is the bread and butter, transfer from one account to another
+  - approve, transferFrom and allowance are methods for other contracts moving your funds
+
+```
+pragma solidity 0.8.4;
+
+interface IERC20 {
+
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+```
+
+- in solidity can inherit an interface into your own smart contract
+  - must define all the methods declare on the interface
+
+### ERC-20 Data Structures
+- balances : mapping of token balances, by owner
+- allowances : mapping of allowances/delegate spending
+
+### ERC-20 transfer
+- transfer : call to the transfer method
+- approve-transferFrom : 
+
+## Send ERC20s to Contracts
+1. first transaction we interact with ERC20 contract using approve method:
+```
+contract ERC20 {
+    mapping (address => mapping (address => uint256)) allowed;
+
+    // ...
+
+    function approve(address spender, uint256 value) public returns (bool success) {
+        allowed[msg.sender][spender] = value;
+        emit Approval(msg.sender, spender, value);
+        return true;
+    }
+}
+```
+- allows spender to spend tokens behalf of msg.sender
+
+2. second transaction we call the Spender smart contract to spend to pull our tokens
+```
+contract Spender {
+    mapping(address => uint) pooled;
+    address erc20;
+
+    // ...
+
+    function poolTokens(uint256 amount) public returns (bool success) {
+        // pull the tokens from the msg.sender using transferFrom
+        bool success = ERC20(erc20).transferFrom(msg.sender, address(this), amount);
+        require(success);
+        
+        // account for this balance update 
+        pooled[msg.sender] += amount;
+    }
+}
+
+contract ERC20 {
+    mapping (address => uint256) balances;
+    mapping (address => mapping (address => uint256)) allowed;
+    
+    // ...
+
+    function transferFrom(address from, address to, uint256 value) public returns (bool success) {
+        balances[to] += value;
+        balances[from] -= value;
+        allowed[from][msg.sender] -= value;
+        emit Transfer(from, to, value);
+        return true;
+    }
+}
+```
+- call poolTokens on Spender and the contract would pull tokens from ERC20 contract. then Spender contract can account for balance change
+
+## NFTs
+
+- NFT stands for Non Fundible Token
+  - token that has unique characteristics
+- could be items that unlock digital experiences like app privileges, tickets to digital shows, video game items, etc
+- Unlike ERC20s, NFTs will often store some of their data off-chain
+- uint is expensive so 5mb image must be costly
+- data stored off chain is referred to as metadata
+- where is it stored off-chain?
+  - most NFT collections use decentralized file networks like IPFS and Areweave
+- IPFS uses "content addressing" to store data on a peer-to-peer network
+- data is stored as a hash of the contents
+
+
+# Week 7 
+
+## Storage Slots
+- spot where some storage value is stored
+- ex: 
+  - uint256 x = 97 // 0x0
+  - uint256 y = 56 // 0x1
+  - mapping(uint=>uint) // 0x2
+
+  - solidity will store this between 0x0 -> 0xffff...
+  - takes storage variable and stores to 0x0...000
+- all storage spots is available in public database the ethereum creates -> can use json to access and look up 
+- mapping storage : take keccak256 hash of key + base slot
+  - mapping(uint=>uint) testing // 0x2
+  - 0x2 is base
+  - keccak256(0x1 + 0x2)
+  - testing[1] = 5;
+  - keccak256(0x2 + 0x2)
+  - testing[2] = 6;
+- storage slot 32 bytes : 256 bits
+- keccak256 also creates 32 bytes output
+
+## Delegatecall
+- ex: 
+  - function signature : add(uint256, uint256) 0xf3af3849
+  - arguments : 0x0{63}1, 0x0{63}b
+  - = 0xf3af3849
+  00000000000000000000000000000...1
+  00000000000000000000000000000...b
+- calldata: function signature + padded arguments
+- EOA -> contract A (msg.sender: EOA) -> contract B (msg.sender : A)
+- proxy to an implementation: 
+  - EOA -> proxy -> implementation
+  use cases : upgrades, gas savings
+- save on Gas by deploying one implementation and delegating to it
+
+## Libraries
+- like contracts but cannot store storage variables and cant send ether to them
+- often pulled into smart contract bytecode directly by compiler 
+- most of libraries used by Uniswap v3 core contain utility functions
+
+two ways to use libraries:
+1. deployed inline
+- when all functions from a library function are marked as internal, will be pulled directly into smart contract bytecode by solidity compiler
+- pulled inline with contract and deployed together
+2. deployed separately 
+- can be helpful in that it can keep smart contract below 24kb limit
+- can potentially share an on-chain library with other contracts -> can help ease deployment burden 
+- library can run code on behalf of contract
+  - when call external function on library, delegatecall will be made
+- when library is deployed separately, compiler requires that you link the contract to the library you intend to deploy it with 
+
+**OpenZeppelin provides many great Solidity libraries that have been audited by leading security firms in the field 
+
+- if contract uses a library function marked as internal -> code will be copied into the contract itself and compiled WITH contract
+- if contract uses a library function marked as external or public -> library must be deployed to its own address. contract is then linked to the library address
+  - at runtime contract will create a message using DELGATECALL (EVM opcode) to access library function 
+- function marked as private has no access to it
+
+## Upgradeable Smart Contracts
+- smart contracts can be written to be upgradeable 
+- by design, smart contracts are immutable 
+
+### How do upgradeable smart contracts work?
+- composed of 3 contracts:
+1. Proxy contract : smart contract the user interacts with directly
+  - contract holds the contract state
+  - EIP1967 standard proxy contract
+  - in charge of forwarding transactions to the implementation contract 
+2. Implementation contract : contract that provides skeleton logic and data
+  - where you instantiate your variables
+  - proxy contract via delegatecalls into this one, will give them value
+3. ProxyAdmin contract : contract links Proxy and Implementation
+  - holds authority over Proxy to upgrade the Proxy contract and thus link that proxy to a new implementation contract 
+
+![diagram](https://res.cloudinary.com/divzjiip8/image/upload/v1673520308/alchemyu/Untitled_20.png)
+
+**steps:**
+1. The user performs a call into the Proxy contract
+2. That call hits the fallback function of the Proxy contract which is directly rigged to delegatecall into the Implementation contract address
+3. In performing a delegatecall, the context of the Proxy contract is forwarded. This means that the storage of 0x1234.1111 will be directly affected by the logic of 0x1234.4444 (that's the whole point of delegatecall!)
+4. The logic from Implementation is performed on the state of Proxy and if the logic does not revert, the state is returned to Proxy which then returns a receipt to the original user
+5. Transaction over! 
+
+## The state of Governance
+![governance-system](https://res.cloudinary.com/divzjiip8/image/upload/c_scale,w_750/v1647399476/gov_diagram_q4jeam.png)
+
+- executable proposal can be created which could be anything
+- proposal is voted upon by token holders
+- if minimum voting thresholds are reached, vote will be queued for eventual execution 
 
